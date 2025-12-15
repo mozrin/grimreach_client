@@ -150,13 +150,15 @@ Future<void> _connectToServer() async {
                 );
               }
 
-              // Zone Control (Phase 020)
-              state.zoneControl.forEach((zone, faction) {
-                final previous = previousZoneControl[zone];
-                if (previous != faction) {
-                  debugPrint('Client: $zone now controlled by ${faction.name}');
-                }
-              });
+              // Zone Control Changes (Phase 022)
+              // Use explicit recentShifts list from server
+              for (final zone in state.recentShifts) {
+                final newOwner = state.zoneControl[zone]!;
+                debugPrint('Client: WARNING: $newOwner has TAKEN the $zone!');
+              }
+
+              // Update previous control state just in case we need it later, or remove if unused.
+              // Requirement says "detect changes... print...". `recentShifts` handles detection.
               previousZoneControl = state.zoneControl;
 
               // Zone Influence (Phase 021)
