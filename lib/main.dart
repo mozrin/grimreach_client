@@ -28,7 +28,6 @@ Future<void> _connectToServer() async {
     Zone? lastZone;
     Set<String> previousEntityIds = {}; // State for tracking despawns
     Map<String, Zone> previousEntityZones = {}; // ID -> Zone
-    Map<String, Faction> previousZoneControl = {}; // Phase 020
     Map<String, Map<Faction, double>> previousZoneInfluence = {}; // Phase 021
     Map<Faction, double> previousFactionMorale = {};
     Map<Faction, double> previousFactionInfluenceModifiers = {};
@@ -159,10 +158,6 @@ Future<void> _connectToServer() async {
                 final newOwner = state.zoneControl[zone]!;
                 debugPrint('Client: WARNING: $newOwner has TAKEN the $zone!');
               }
-
-              // Update previous control state just in case we need it later, or remove if unused.
-              // Requirement says "detect changes... print...". `recentShifts` handles detection.
-              previousZoneControl = state.zoneControl;
 
               // Zone Influence (Phase 021)
               // Print summary for Safe Zone (example as per req)
