@@ -28,6 +28,7 @@ Future<void> _connectToServer() async {
     Zone? lastZone;
     Set<String> previousEntityIds = {}; // State for tracking despawns
     Map<String, Zone> previousEntityZones = {}; // ID -> Zone
+    Map<String, Faction> previousZoneControl = {}; // Phase 020
 
     debugPrint('Client: Connected to server');
 
@@ -147,6 +148,15 @@ Future<void> _connectToServer() async {
                   'Client: Groups detected. Count: ${state.groupCount}, Avg Size: ${state.averageGroupSize.toStringAsFixed(1)}',
                 );
               }
+
+              // Zone Control (Phase 020)
+              state.zoneControl.forEach((zone, faction) {
+                final previous = previousZoneControl[zone];
+                if (previous != faction) {
+                  debugPrint('Client: $zone now controlled by ${faction.name}');
+                }
+              });
+              previousZoneControl = state.zoneControl;
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
