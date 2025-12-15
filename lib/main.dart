@@ -7,6 +7,7 @@ import 'package:grimreach_api/protocol.dart';
 import 'package:grimreach_api/world_state.dart';
 import 'package:grimreach_api/zone.dart';
 import 'package:grimreach_api/entity_type.dart';
+import 'package:grimreach_api/faction.dart';
 import 'game/engine/game_loop.dart';
 
 void main() {
@@ -43,6 +44,8 @@ Future<void> _connectToServer() async {
             int res = 0;
             int str = 0;
 
+            final factionCounts = <Faction, int>{};
+
             final currentIds = <String>{};
             int movedToWild = 0;
             int movedToSafe = 0;
@@ -56,6 +59,8 @@ Future<void> _connectToServer() async {
               if (e.type == EntityType.resource) res++;
               if (e.type == EntityType.structure) str++;
 
+              factionCounts[e.faction] = (factionCounts[e.faction] ?? 0) + 1;
+
               if (previousEntityZones.containsKey(e.id)) {
                 final oldZone = previousEntityZones[e.id];
                 if (oldZone == Zone.safe && e.zone == Zone.wilderness) {
@@ -67,6 +72,11 @@ Future<void> _connectToServer() async {
               }
               previousEntityZones[e.id] = e.zone;
             }
+            // Count player factions too?
+            for (final p in state.players) {
+              factionCounts[p.faction] = (factionCounts[p.faction] ?? 0) + 1;
+            }
+
             previousEntityZones.removeWhere((k, v) => !currentIds.contains(k));
 
             if (movedToWild > 0) {
