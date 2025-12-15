@@ -130,6 +130,13 @@ Future<void> _connectToServer() async {
                   debugPrint('Client: $count clusters in $zone');
                 });
               }
+
+              // Log Groups (Phase 018)
+              if (state.groupCount > 0) {
+                debugPrint(
+                  'Client: Groups detected. Count: ${state.groupCount}, Avg Size: ${state.averageGroupSize.toStringAsFixed(1)}',
+                );
+              }
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
