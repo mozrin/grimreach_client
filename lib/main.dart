@@ -28,7 +28,7 @@ Future<void> _connectToServer() async {
     Set<String> previousEntityIds = {}; // State for tracking despawns
     Map<String, Zone> previousEntityZones = {}; // ID -> Zone
 
-    print('Client: Connected to server');
+    debugPrint('Client: Connected to server');
 
     socket.listen(
       (data) {
@@ -58,19 +58,23 @@ Future<void> _connectToServer() async {
 
               if (previousEntityZones.containsKey(e.id)) {
                 final oldZone = previousEntityZones[e.id];
-                if (oldZone == Zone.safe && e.zone == Zone.wilderness)
+                if (oldZone == Zone.safe && e.zone == Zone.wilderness) {
                   movedToWild++;
-                if (oldZone == Zone.wilderness && e.zone == Zone.safe)
+                }
+                if (oldZone == Zone.wilderness && e.zone == Zone.safe) {
                   movedToSafe++;
+                }
               }
               previousEntityZones[e.id] = e.zone;
             }
             previousEntityZones.removeWhere((k, v) => !currentIds.contains(k));
 
-            if (movedToWild > 0)
-              print('Client: $movedToWild entities moved into wilderness');
-            if (movedToSafe > 0)
-              print('Client: $movedToSafe entities moved into safe zone');
+            if (movedToWild > 0) {
+              debugPrint('Client: $movedToWild entities moved into wilderness');
+            }
+            if (movedToSafe > 0) {
+              debugPrint('Client: $movedToSafe entities moved into safe zone');
+            }
 
             final despawnedCount = previousEntityIds
                 .difference(currentIds)
@@ -87,7 +91,7 @@ Future<void> _connectToServer() async {
             // But I cannot easily add top-level vars in this `replace_file_content` without changing `main`.
             // Current `main` has `Set<String> previousEntityIds = {};` in `_connectToServer`. I can add `previousEntityZones` there.
 
-            print(
+            debugPrint(
               'Client: World update - P: ${state.players.length}, E: ${state.entities.length} (Safe: $eSafe, Wild: $eWild), Types (N: $npc, R: $res, S: $str), Despawned: $despawnedCount, Respawned: $respawnedCount',
             );
 
@@ -97,37 +101,50 @@ Future<void> _connectToServer() async {
 
               // Detect Zone Change
               if (lastZone != me.zone) {
-                print('Client: Zone changed to ${me.zone.name}');
+                debugPrint('Client: Zone changed to ${me.zone.name}');
                 lastZone = me.zone;
               }
 
               // Log movement
-              print('Client: Player moved to x=${me.x.toStringAsFixed(1)}');
+              debugPrint(
+                'Client: Player moved to x=${me.x.toStringAsFixed(1)}',
+              );
+
+              if (state.playerProximityCounts.containsKey(myId)) {
+                final count = state.playerProximityCounts[myId];
+                if (count != null && count > 0) {
+                  debugPrint('Client: Player near $count entities');
+                }
+              } else {
+                debugPrint(
+                  'Client: No proximity data for $myId. Keys: ${state.playerProximityCounts.keys.toList()}',
+                );
+              }
             } catch (e) {
-              print('Client: Error tracking player: $e');
+              debugPrint('Client: Error tracking player: $e');
             }
 
             // Still print summary if needed, or just zone? Instructions say "print a message indicating the new zone".
             // Phase 005 required printing summary. Phase 007 says "Update... to detect and print zone changes".
             // I'll keep summary to be safe but add zone logging.
           } else {
-            print('Client: Message received: ${msg.type}');
+            debugPrint('Client: Message received: ${msg.type}');
           }
         }
       },
       onError: (e) {
-        print('Client: Error: $e');
+        debugPrint('Client: Error: $e');
       },
       onDone: () {
-        print('Client: Disconnected');
+        debugPrint('Client: Disconnected');
       },
     );
 
     // Send handshake
     final handshake = Message(type: Protocol.handshake, data: {'id': myId});
     socket.add(codec.encode(handshake));
-    print('Client: Sent handshake');
+    debugPrint('Client: Sent handshake');
   } catch (e) {
-    print('Client: Connection failed: $e');
+    debugPrint('Client: Connection failed: $e');
   }
 }
