@@ -30,6 +30,7 @@ Future<void> _connectToServer() async {
     Map<String, Zone> previousEntityZones = {}; // ID -> Zone
     Map<String, Faction> previousZoneControl = {}; // Phase 020
     Map<String, Map<Faction, double>> previousZoneInfluence = {}; // Phase 021
+    Map<Faction, double> previousFactionMorale = {};
 
     debugPrint('Client: Connected to server');
 
@@ -168,27 +169,30 @@ Future<void> _connectToServer() async {
               // "Order influence in Safe: 72.0 (+1.0)"
 
               state.zoneInfluence.forEach((zone, scores) {
+                final previousScores = previousZoneInfluence[zone] ?? {};
+
                 scores.forEach((faction, score) {
-                  final prevScores = previousZoneInfluence[zone];
-                  final prevScore = prevScores?[faction] ?? 0.0;
-
-                  // Only log if meaningful change? Or just summary?
-                  // Req: "print simple influence information... detect increases or decreases"
-                  // Let's print summary every tick? That might be spammy.
-                  // Let's print only when crossing integer thresholds?
-                  // Or just print summary.
-                  // "Order influence in safe zone: 72"
-                  // Let's print standard summary line.
-
-                  if ((score - prevScore).abs() > 0.5) {
-                    // Log significant changes to reduce spam
+                  final prev = previousScores[faction] ?? 0.0;
+                  if ((score - prev).abs() > 0.5) {
                     debugPrint(
-                      'Client: ${faction.name} influence in $zone: ${score.toStringAsFixed(1)}',
+                      'Client: Influence Update: $zone - ${faction.name} ($score)',
                     );
                   }
                 });
               });
               previousZoneInfluence = state.zoneInfluence;
+
+              // Faction Morale (Phase 023)
+              state.factionMorale.forEach((faction, score) {
+                final prev = previousFactionMorale[faction] ?? 50.0;
+                if ((score - prev).abs() > 0.5) {
+                  String trend = score > prev ? 'Rising' : 'Falling';
+                  debugPrint(
+                    'Client: Morale ${faction.name} $trend: ${prev.toStringAsFixed(1)} -> ${score.toStringAsFixed(1)}',
+                  );
+                }
+              });
+              previousFactionMorale = state.factionMorale;
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
