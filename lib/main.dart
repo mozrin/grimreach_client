@@ -33,8 +33,16 @@ Future<void> _connectToServer() async {
           final msg = codec.decode(data);
           if (msg.type == Protocol.state) {
             final state = WorldState.fromJson(msg.data);
+
+            int eSafe = 0;
+            int eWild = 0;
+            for (final e in state.entities) {
+              if (e.zone == Zone.safe) eSafe++;
+              if (e.zone == Zone.wilderness) eWild++;
+            }
+
             print(
-              'Client: World update - P: ${state.players.length}, E: ${state.entities.length}',
+              'Client: World update - P: ${state.players.length}, E: ${state.entities.length} (Safe: $eSafe, Wild: $eWild)',
             );
 
             // Find local player
