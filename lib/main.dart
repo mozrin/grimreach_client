@@ -25,6 +25,7 @@ Future<void> _connectToServer() async {
     final codec = MessageCodec();
     final myId = 'client_1'; // Hardcoded for this phase as per previous logic
     Zone? lastZone;
+    Set<String> previousEntityIds = {}; // State for tracking despawns
 
     print('Client: Connected to server');
 
@@ -41,7 +42,10 @@ Future<void> _connectToServer() async {
             int res = 0;
             int str = 0;
 
+            final currentIds = <String>{};
+
             for (final e in state.entities) {
+              currentIds.add(e.id);
               if (e.zone == Zone.safe) eSafe++;
               if (e.zone == Zone.wilderness) eWild++;
 
@@ -50,11 +54,16 @@ Future<void> _connectToServer() async {
               if (e.type == EntityType.structure) str++;
             }
 
+            final despawnedCount = previousEntityIds
+                .difference(currentIds)
+                .length;
+            previousEntityIds = currentIds;
+
             print(
-              'Client: World update - P: ${state.players.length}, E: ${state.entities.length} (Safe: $eSafe, Wild: $eWild), Types (N: $npc, R: $res, S: $str)',
+              'Client: World update - P: ${state.players.length}, E: ${state.entities.length} (Safe: $eSafe, Wild: $eWild), Types (N: $npc, R: $res, S: $str), Despawned: $despawnedCount',
             );
 
-            // Find local player
+            // Client State
             try {
               final me = state.players.firstWhere((p) => p.id == myId);
               if (lastZone != me.zone) {
