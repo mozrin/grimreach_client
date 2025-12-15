@@ -1,13 +1,23 @@
 import 'dart:io';
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:grimreach_api/protocol.dart';
-import 'package:grimreach_api/messages.dart';
 import 'package:grimreach_api/message_codec.dart';
+import 'package:grimreach_api/messages.dart';
+import 'package:grimreach_api/protocol.dart';
 import 'package:grimreach_api/world_state.dart';
+import 'game/engine/game_loop.dart';
 
-void main() async {
-  runApp(const Placeholder());
+void main() {
+  // Use GameLoop as the root game
+  final game = GameLoop();
 
+  // Connect to server (fire and forget / independent of UI)
+  _connectToServer();
+
+  runApp(GameWidget(game: game));
+}
+
+Future<void> _connectToServer() async {
   try {
     final socket = await WebSocket.connect('ws://localhost:8080/ws');
     final codec = MessageCodec();
