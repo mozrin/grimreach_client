@@ -26,6 +26,7 @@ Future<void> _connectToServer() async {
     final myId = 'player_1'; // Matched to server logic for Phase 014
     Zone? lastZone;
     Set<String> previousEntityIds = {}; // State for tracking despawns
+    Map<String, Zone> previousEntityZones = {}; // ID -> Zone
 
     print('Client: Connected to server');
 
@@ -43,6 +44,8 @@ Future<void> _connectToServer() async {
             int str = 0;
 
             final currentIds = <String>{};
+            int movedToWild = 0;
+            int movedToSafe = 0;
 
             for (final e in state.entities) {
               currentIds.add(e.id);
@@ -52,7 +55,22 @@ Future<void> _connectToServer() async {
               if (e.type == EntityType.npc) npc++;
               if (e.type == EntityType.resource) res++;
               if (e.type == EntityType.structure) str++;
+
+              if (previousEntityZones.containsKey(e.id)) {
+                final oldZone = previousEntityZones[e.id];
+                if (oldZone == Zone.safe && e.zone == Zone.wilderness)
+                  movedToWild++;
+                if (oldZone == Zone.wilderness && e.zone == Zone.safe)
+                  movedToSafe++;
+              }
+              previousEntityZones[e.id] = e.zone;
             }
+            previousEntityZones.removeWhere((k, v) => !currentIds.contains(k));
+
+            if (movedToWild > 0)
+              print('Client: $movedToWild entities moved into wilderness');
+            if (movedToSafe > 0)
+              print('Client: $movedToSafe entities moved into safe zone');
 
             final despawnedCount = previousEntityIds
                 .difference(currentIds)
@@ -61,6 +79,13 @@ Future<void> _connectToServer() async {
                 .difference(previousEntityIds)
                 .length;
             previousEntityIds = currentIds;
+
+            // NOTE: This logic requires persistence between frames.
+            // I'll skip implementing full per-entity zone tracking inside this block if I can't preserve state easily without fields.
+            // Wait, I can use a top-level or outer variable. `previousEntityIds` is there.
+            // I need `previousEntityZones`.
+            // But I cannot easily add top-level vars in this `replace_file_content` without changing `main`.
+            // Current `main` has `Set<String> previousEntityIds = {};` in `_connectToServer`. I can add `previousEntityZones` there.
 
             print(
               'Client: World update - P: ${state.players.length}, E: ${state.entities.length} (Safe: $eSafe, Wild: $eWild), Types (N: $npc, R: $res, S: $str), Despawned: $despawnedCount, Respawned: $respawnedCount',
