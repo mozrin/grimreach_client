@@ -31,6 +31,7 @@ Future<void> _connectToServer() async {
     Map<String, Faction> previousZoneControl = {}; // Phase 020
     Map<String, Map<Faction, double>> previousZoneInfluence = {}; // Phase 021
     Map<Faction, double> previousFactionMorale = {};
+    Map<Faction, double> previousFactionInfluenceModifiers = {};
 
     debugPrint('Client: Connected to server');
 
@@ -193,6 +194,26 @@ Future<void> _connectToServer() async {
                 }
               });
               previousFactionMorale = state.factionMorale;
+
+              // Influence Modifiers (Phase 024)
+              state.factionInfluenceModifiers.forEach((faction, modifier) {
+                final prev = previousFactionInfluenceModifiers[faction] ?? 1.0;
+                if ((modifier - prev).abs() > 0.05) {
+                  if (modifier > 1.0) {
+                    debugPrint(
+                      'Client: ${faction.name} Influence BOOSTED (x${modifier.toStringAsFixed(1)})',
+                    );
+                  } else if (modifier < 1.0) {
+                    debugPrint(
+                      'Client: ${faction.name} Influence SUPPRESSED (x${modifier.toStringAsFixed(1)})',
+                    );
+                  } else {
+                    debugPrint('Client: ${faction.name} Influence NORMALIZED');
+                  }
+                }
+              });
+              previousFactionInfluenceModifiers =
+                  state.factionInfluenceModifiers;
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
