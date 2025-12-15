@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:grimreach_api/protocol.dart';
 import 'package:grimreach_api/messages.dart';
 import 'package:grimreach_api/message_codec.dart';
+import 'package:grimreach_api/world_state.dart';
 
 void main() async {
   runApp(const Placeholder());
@@ -17,7 +18,14 @@ void main() async {
       (data) {
         if (data is String) {
           final msg = codec.decode(data);
-          print('Client: Echo received: ${msg.type}');
+          if (msg.type == Protocol.state) {
+            final state = WorldState.fromJson(msg.data);
+            print(
+              'Client: World update - P: ${state.players.length}, E: ${state.entities.length}',
+            );
+          } else {
+            print('Client: Message received: ${msg.type}');
+          }
         }
       },
       onError: (e) {
