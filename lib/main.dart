@@ -34,6 +34,7 @@ Future<void> _connectToServer() async {
     Map<Faction, double> previousFactionPressure = {};
     Map<String, String> previousZoneSaturation = {};
     Map<String, double> previousMigrationPressure = {};
+    String previousEnvironment = 'calm';
 
     debugPrint('Client: Connected to server');
 
@@ -251,6 +252,23 @@ Future<void> _connectToServer() async {
                 }
               });
               previousMigrationPressure = state.migrationPressure;
+
+              // Environment (Phase 028)
+              if (state.globalEnvironment != previousEnvironment) {
+                debugPrint(
+                  'Client: Environment shifted from $previousEnvironment to ${state.globalEnvironment}',
+                );
+                if (state.globalEnvironment == 'fog') {
+                  debugPrint(
+                    'Client: WARN - Heavy Fog rolling in. Movement reduced.',
+                  );
+                } else if (state.globalEnvironment == 'storm') {
+                  debugPrint(
+                    'Client: ALERT - STORM DETECTED! Spawns halted. Influence suppressed.',
+                  );
+                }
+                previousEnvironment = state.globalEnvironment;
+              }
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
