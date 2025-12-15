@@ -29,6 +29,7 @@ Future<void> _connectToServer() async {
     Set<String> previousEntityIds = {}; // State for tracking despawns
     Map<String, Zone> previousEntityZones = {}; // ID -> Zone
     Map<String, Faction> previousZoneControl = {}; // Phase 020
+    Map<String, Map<Faction, double>> previousZoneInfluence = {}; // Phase 021
 
     debugPrint('Client: Connected to server');
 
@@ -157,6 +158,35 @@ Future<void> _connectToServer() async {
                 }
               });
               previousZoneControl = state.zoneControl;
+
+              // Zone Influence (Phase 021)
+              // Print summary for Safe Zone (example as per req)
+              // "Order influence in safe zone: 72"
+              // Detect increases/decreases?
+              // "Order influence in Safe: 72.0 (+1.0)"
+
+              state.zoneInfluence.forEach((zone, scores) {
+                scores.forEach((faction, score) {
+                  final prevScores = previousZoneInfluence[zone];
+                  final prevScore = prevScores?[faction] ?? 0.0;
+
+                  // Only log if meaningful change? Or just summary?
+                  // Req: "print simple influence information... detect increases or decreases"
+                  // Let's print summary every tick? That might be spammy.
+                  // Let's print only when crossing integer thresholds?
+                  // Or just print summary.
+                  // "Order influence in safe zone: 72"
+                  // Let's print standard summary line.
+
+                  if ((score - prevScore).abs() > 0.5) {
+                    // Log significant changes to reduce spam
+                    debugPrint(
+                      'Client: ${faction.name} influence in $zone: ${score.toStringAsFixed(1)}',
+                    );
+                  }
+                });
+              });
+              previousZoneInfluence = state.zoneInfluence;
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
