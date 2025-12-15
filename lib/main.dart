@@ -33,6 +33,9 @@ Future<void> _connectToServer() async {
           final msg = codec.decode(data);
           if (msg.type == Protocol.state) {
             final state = WorldState.fromJson(msg.data);
+            print(
+              'Client: World update - P: ${state.players.length}, E: ${state.entities.length}',
+            );
 
             // Find local player
             try {
