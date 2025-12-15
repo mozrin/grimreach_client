@@ -120,6 +120,16 @@ Future<void> _connectToServer() async {
                   'Client: No proximity data for $myId. Keys: ${state.playerProximityCounts.keys.toList()}',
                 );
               }
+
+              // Log Clusters
+              if (state.largestClusterSize > 0) {
+                debugPrint(
+                  'Client: Clusters detected. Largest: ${state.largestClusterSize}',
+                );
+                state.zoneClusterCounts.forEach((zone, count) {
+                  debugPrint('Client: $count clusters in $zone');
+                });
+              }
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
