@@ -57,10 +57,13 @@ Future<void> _connectToServer() async {
             final despawnedCount = previousEntityIds
                 .difference(currentIds)
                 .length;
+            final respawnedCount = currentIds
+                .difference(previousEntityIds)
+                .length;
             previousEntityIds = currentIds;
 
             print(
-              'Client: World update - P: ${state.players.length}, E: ${state.entities.length} (Safe: $eSafe, Wild: $eWild), Types (N: $npc, R: $res, S: $str), Despawned: $despawnedCount',
+              'Client: World update - P: ${state.players.length}, E: ${state.entities.length} (Safe: $eSafe, Wild: $eWild), Types (N: $npc, R: $res, S: $str), Despawned: $despawnedCount, Respawned: $respawnedCount',
             );
 
             // Client State
