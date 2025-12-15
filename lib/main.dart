@@ -33,6 +33,7 @@ Future<void> _connectToServer() async {
     Map<Faction, double> previousFactionInfluenceModifiers = {};
     Map<Faction, double> previousFactionPressure = {};
     Map<String, String> previousZoneSaturation = {};
+    Map<String, double> previousMigrationPressure = {};
 
     debugPrint('Client: Connected to server');
 
@@ -234,6 +235,22 @@ Future<void> _connectToServer() async {
                 }
               });
               previousZoneSaturation = state.zoneSaturation;
+
+              // Migration Pressure (Phase 027)
+              state.migrationPressure.forEach((zone, pressure) {
+                final prev = previousMigrationPressure[zone] ?? 0.0;
+                // Threshold 50 starts the "Push"
+                if (pressure > 50.0 && prev <= 50.0) {
+                  if (zone == Zone.safe.name) {
+                    debugPrint(
+                      'Client: Migration Wave Started: Safe Zone -> Wilderness (Pressure ${pressure.toStringAsFixed(1)})',
+                    );
+                  }
+                } else if (pressure <= 50.0 && prev > 50.0) {
+                  debugPrint('Client: Migration Wave Ended in $zone');
+                }
+              });
+              previousMigrationPressure = state.migrationPressure;
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
