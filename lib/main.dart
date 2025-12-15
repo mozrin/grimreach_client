@@ -32,6 +32,7 @@ Future<void> _connectToServer() async {
     Map<Faction, double> previousFactionMorale = {};
     Map<Faction, double> previousFactionInfluenceModifiers = {};
     Map<Faction, double> previousFactionPressure = {};
+    Map<String, String> previousZoneSaturation = {};
 
     debugPrint('Client: Connected to server');
 
@@ -222,6 +223,17 @@ Future<void> _connectToServer() async {
                 }
               });
               previousFactionPressure = state.factionPressure;
+
+              // Zone Saturation (Phase 026)
+              state.zoneSaturation.forEach((zone, saturation) {
+                final prev = previousZoneSaturation[zone] ?? 'normal';
+                if (saturation != prev) {
+                  debugPrint(
+                    'Client: Zone Saturation: $zone is now ${saturation.toUpperCase()}',
+                  );
+                }
+              });
+              previousZoneSaturation = state.zoneSaturation;
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
