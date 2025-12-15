@@ -23,7 +23,7 @@ Future<void> _connectToServer() async {
   try {
     final socket = await WebSocket.connect('ws://localhost:8080/ws');
     final codec = MessageCodec();
-    final myId = 'client_1'; // Hardcoded for this phase as per previous logic
+    final myId = 'player_1'; // Matched to server logic for Phase 014
     Zone? lastZone;
     Set<String> previousEntityIds = {}; // State for tracking despawns
 
@@ -69,12 +69,17 @@ Future<void> _connectToServer() async {
             // Client State
             try {
               final me = state.players.firstWhere((p) => p.id == myId);
+
+              // Detect Zone Change
               if (lastZone != me.zone) {
                 print('Client: Zone changed to ${me.zone.name}');
                 lastZone = me.zone;
               }
+
+              // Log movement
+              print('Client: Player moved to x=${me.x.toStringAsFixed(1)}');
             } catch (e) {
-              // Local player might not be in state yet or ID mismatch
+              print('Client: Error tracking player: $e');
             }
 
             // Still print summary if needed, or just zone? Instructions say "print a message indicating the new zone".
