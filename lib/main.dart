@@ -8,6 +8,7 @@ import 'package:grimreach_api/world_state.dart';
 import 'package:grimreach_api/zone.dart';
 import 'package:grimreach_api/entity_type.dart';
 import 'package:grimreach_api/faction.dart';
+import 'package:grimreach_api/season.dart';
 import 'game/engine/game_loop.dart';
 
 void main() {
@@ -35,7 +36,9 @@ Future<void> _connectToServer() async {
     Map<String, String> previousZoneSaturation = {};
     Map<String, double> previousMigrationPressure = {};
     String previousEnvironment = 'calm';
+
     Map<String, String> previousZoneHazards = {};
+    Season previousSeason = Season.spring;
 
     debugPrint('Client: Connected to server');
 
@@ -297,6 +300,19 @@ Future<void> _connectToServer() async {
                 }
               });
               previousZoneHazards = state.zoneHazards;
+
+              // Seasons (Phase 030)
+              if (state.currentSeason != previousSeason) {
+                debugPrint(
+                  'Client: Season changed to ${state.currentSeason.name.toUpperCase()}',
+                );
+                if (state.seasonalModifiers.isNotEmpty) {
+                  debugPrint(
+                    'Client: Seasonal Modifiers: ${state.seasonalModifiers.join(", ")}',
+                  );
+                }
+                previousSeason = state.currentSeason;
+              }
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
