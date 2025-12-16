@@ -35,6 +35,7 @@ Future<void> _connectToServer() async {
     Map<String, String> previousZoneSaturation = {};
     Map<String, double> previousMigrationPressure = {};
     String previousEnvironment = 'calm';
+    Map<String, String> previousZoneHazards = {};
 
     debugPrint('Client: Connected to server');
 
@@ -269,6 +270,33 @@ Future<void> _connectToServer() async {
                 }
                 previousEnvironment = state.globalEnvironment;
               }
+
+              // Hazards (Phase 029)
+              state.zoneHazards.forEach((zone, hazardName) {
+                final prev = previousZoneHazards[zone] ?? 'none';
+                if (hazardName != prev) {
+                  debugPrint(
+                    'Client: WARNING - $zone is now under $hazardName',
+                  );
+
+                  if (hazardName == 'wildfire') {
+                    debugPrint(
+                      'Client: [$zone] Wildfire active (Spawns suppressed)',
+                    );
+                  } else if (hazardName == 'stormSurge') {
+                    debugPrint(
+                      'Client: [$zone] Storm Surge active (Low pops, High migration)',
+                    );
+                  } else if (hazardName == 'toxicFog') {
+                    debugPrint(
+                      'Client: [$zone] Toxic Fog active (Slow movement)',
+                    );
+                  } else if (hazardName == 'quake') {
+                    debugPrint('Client: [$zone] Quake active (Low influence)');
+                  }
+                }
+              });
+              previousZoneHazards = state.zoneHazards;
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
             }
