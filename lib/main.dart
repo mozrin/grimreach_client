@@ -9,6 +9,7 @@ import 'package:grimreach_api/zone.dart';
 import 'package:grimreach_api/entity_type.dart';
 import 'package:grimreach_api/faction.dart';
 import 'package:grimreach_api/season.dart';
+import 'package:grimreach_api/lunar_phase.dart';
 import 'game/engine/game_loop.dart';
 
 void main() {
@@ -39,6 +40,7 @@ Future<void> _connectToServer() async {
 
     Map<String, String> previousZoneHazards = {};
     Season previousSeason = Season.spring;
+    LunarPhase previousLunarPhase = LunarPhase.newMoon;
 
     debugPrint('Client: Connected to server');
 
@@ -312,6 +314,19 @@ Future<void> _connectToServer() async {
                   );
                 }
                 previousSeason = state.currentSeason;
+              }
+
+              // Phase 031: Lunar Cycles
+              if (state.currentLunarPhase != previousLunarPhase) {
+                debugPrint(
+                  'Client: Lunar Phase changed to ${state.currentLunarPhase.name.toUpperCase()}',
+                );
+                if (state.lunarModifiers.isNotEmpty) {
+                  debugPrint(
+                    'Client: Lunar Modifiers: ${state.lunarModifiers.join(", ")}',
+                  );
+                }
+                previousLunarPhase = state.currentLunarPhase;
               }
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
