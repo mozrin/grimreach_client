@@ -10,6 +10,7 @@ import 'package:grimreach_api/entity_type.dart';
 import 'package:grimreach_api/faction.dart';
 import 'package:grimreach_api/season.dart';
 import 'package:grimreach_api/lunar_phase.dart';
+import 'package:grimreach_api/constellation.dart';
 import 'game/engine/game_loop.dart';
 
 void main() {
@@ -41,6 +42,7 @@ Future<void> _connectToServer() async {
     Map<String, String> previousZoneHazards = {};
     Season previousSeason = Season.spring;
     LunarPhase previousLunarPhase = LunarPhase.newMoon;
+    Constellation previousConstellation = Constellation.wanderer;
 
     debugPrint('Client: Connected to server');
 
@@ -327,6 +329,19 @@ Future<void> _connectToServer() async {
                   );
                 }
                 previousLunarPhase = state.currentLunarPhase;
+              }
+
+              // Phase 032: Constellation Cycles
+              if (state.currentConstellation != previousConstellation) {
+                debugPrint(
+                  'Client: Constellation Shift: ${state.currentConstellation.name.toUpperCase()} ascendant',
+                );
+                if (state.constellationModifiers.isNotEmpty) {
+                  debugPrint(
+                    'Client: Astral Modifiers: ${state.constellationModifiers.join(", ")}',
+                  );
+                }
+                previousConstellation = state.currentConstellation;
               }
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
