@@ -11,6 +11,7 @@ import 'package:grimreach_api/faction.dart';
 import 'package:grimreach_api/season.dart';
 import 'package:grimreach_api/lunar_phase.dart';
 import 'package:grimreach_api/constellation.dart';
+import 'package:grimreach_api/harmonic_state.dart';
 import 'game/engine/game_loop.dart';
 
 void main() {
@@ -43,6 +44,7 @@ Future<void> _connectToServer() async {
     Season previousSeason = Season.spring;
     LunarPhase previousLunarPhase = LunarPhase.newMoon;
     Constellation previousConstellation = Constellation.wanderer;
+    HarmonicState previousHarmonicState = HarmonicState.nullState;
 
     debugPrint('Client: Connected to server');
 
@@ -342,6 +344,19 @@ Future<void> _connectToServer() async {
                   );
                 }
                 previousConstellation = state.currentConstellation;
+              }
+
+              // Phase 033: Harmonic Cycles
+              if (state.currentHarmonicState != previousHarmonicState) {
+                debugPrint(
+                  'Client: Harmonic Shift: ${state.currentHarmonicState.name.toUpperCase()}',
+                );
+                if (state.harmonicModifiers.isNotEmpty) {
+                  debugPrint(
+                    'Client: Harmonic Modifiers: ${state.harmonicModifiers.join(", ")}',
+                  );
+                }
+                previousHarmonicState = state.currentHarmonicState;
               }
             } catch (e) {
               debugPrint('Client: Error tracking player: $e');
